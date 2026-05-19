@@ -4,66 +4,38 @@ namespace Adel\DevTools\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CommandController extends Controller
 {
-    public function optimizeClear()
+    protected function runCommand(string $command, array $options = []): JsonResponse
     {
-        Artisan::call('optimize:clear');
+        try {
+            Artisan::call($command, $options);
+            $output = Artisan::output();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Optimize Clear Done'
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => $command . ' executed',
+                'output' => $output,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
-    public function migrate()
+    public function handleCommand(Request $request, string $commandKey): JsonResponse
     {
-        Artisan::call('migrate', ['--force' => true]);
+        $commands = config('devtools.commands');
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Migration Done'
-        ]);
-    }
+        if (!isset($commands[$commandKey])) {
+            return response()->json(['success' => false, 'message' => 'Not found'], 404);
+        }
 
-    public function storageLink()
-    {
-        Artisan::call('storage:link');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Storage Link Done'
-        ]);
-    }
-
-    public function queueRestart()
-    {
-        Artisan::call('queue:restart');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Queue Restart Done'
-        ]);
-    }
-
-    public function routeClear()
-    {
-        Artisan::call('route:clear');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Route Clear Done'
-        ]);
-    }
-
-    public function viewClear()
-    {
-        Artisan::call('view:clear');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'View Clear Done'
-        ]);
+        return $this->runCommand($commands[$commandKey]['command'], $commands[$commandKey]['options'] ?? []);
     }
 }

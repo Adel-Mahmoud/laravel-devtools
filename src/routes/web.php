@@ -2,14 +2,14 @@
 
 use Illuminate\Support\Facades\Route;
 use Adel\DevTools\Http\Controllers\CommandController;
+use Adel\DevTools\Http\Middleware\AuthorizeDevTools;
 
-Route::middleware('web')->prefix('devtools')->group(function () {
+Route::middleware(array_merge(config('devtools.middleware'), [AuthorizeDevTools::class]))
+    ->prefix('devtools')
+    ->group(function () {
 
-    Route::post('/optimize-clear', [CommandController::class, 'optimizeClear']);
-    Route::post('/migrate', [CommandController::class, 'migrate']);
-    Route::post('/storage-link', [CommandController::class, 'storageLink']);
-    Route::post('/queue-restart', [CommandController::class, 'queueRestart']);
-    Route::post('/route-clear', [CommandController::class, 'routeClear']);
-    Route::post('/view-clear', [CommandController::class, 'viewClear']);
-
-});
+        foreach (config('devtools.commands') as $key => $cmd) {
+            Route::post($cmd['route'], [CommandController::class, 'handleCommand'])
+                ->defaults('commandKey', $key);
+        }
+    });

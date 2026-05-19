@@ -1,76 +1,42 @@
+@if(config('devtools.enabled'))
 <script>
-document.addEventListener('keydown', function(e) {
+(function () {
+    const CSRF = '{{ csrf_token() }}';
+    const commands = @json(config('devtools.commands'));
 
-    const commands = {
-        'c': '/devtools/optimize-clear',
-        'm': '/devtools/migrate',
-        's': '/devtools/storage-link',
-        'q': '/devtools/queue-restart',
-        'r': '/devtools/route-clear',
-        'v': '/devtools/view-clear',
-    };
-
-    if (!e.altKey) {
-        return;
+    function toast(msg, err = false) {
+        const el = document.createElement('div');
+        el.innerText = msg;
+        el.style.position = 'fixed';
+        el.style.bottom = '20px';
+        el.style.right = '20px';
+        el.style.background = err ? '#dc2626' : '#16a34a';
+        el.style.color = '#fff';
+        el.style.padding = '10px';
+        el.style.zIndex = 99999;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 2000);
     }
 
-    const key = e.key.toLowerCase();
-
-    if (!commands[key]) {
-        return;
+    function run(route) {
+        fetch('/devtools' + route, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': CSRF,
+                'Accept': 'application/json'
+            }
+        }).then(r => r.json()).then(d => {
+            toast(d.message, !d.success);
+        }).catch(e => toast(e.message, true));
     }
 
-    e.preventDefault();
-
-    fetch(commands[key], {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Accept': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-
-        showDevToolsToast(data.message);
-
+    document.addEventListener('keydown', function (e) {
+        if (!e.altKey) return;
+        const k = e.key.toLowerCase();
+        if (!commands[k]) return;
+        e.preventDefault();
+        run(commands[k].route);
     });
-
-});
-
-function showDevToolsToast(message)
-{
-    const toast = document.createElement('div');
-
-    toast.innerText = message;
-
-    toast.style.position = 'fixed';
-    toast.style.bottom = '20px';
-    toast.style.right = '20px';
-    toast.style.background = '#16a34a';
-    toast.style.color = '#fff';
-    toast.style.padding = '12px 18px';
-    toast.style.borderRadius = '8px';
-    toast.style.fontSize = '14px';
-    toast.style.zIndex = '999999';
-    toast.style.boxShadow = '0 4px 10px rgba(0,0,0,0.2)';
-    toast.style.opacity = '0';
-    toast.style.transition = '0.3s';
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = '1';
-    }, 100);
-
-    setTimeout(() => {
-
-        toast.style.opacity = '0';
-
-        setTimeout(() => {
-            toast.remove();
-        }, 300);
-
-    }, 2000);
-}
+})();
 </script>
+@endif
