@@ -4,38 +4,28 @@ namespace Adel\DevTools\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CommandController extends Controller
 {
-    protected function runCommand(string $command, array $options = []): JsonResponse
+    private function run($command, $options = [])
     {
-        try {
-            Artisan::call($command, $options);
-            $output = Artisan::output();
-
-            return response()->json([
-                'success' => true,
-                'message' => $command . ' executed',
-                'output' => $output,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
+        Artisan::call($command, $options);
+        return response()->json([
+            'success' => true,
+            'message' => $command . ' executed',
+            'output' => Artisan::output(),
+        ]);
     }
 
-    public function handleCommand(Request $request, string $commandKey): JsonResponse
+    public function handle(Request $request, string $commandKey)
     {
         $commands = config('devtools.commands');
 
-        if (!isset($commands[$commandKey])) {
-            return response()->json(['success' => false, 'message' => 'Not found'], 404);
-        }
+        abort_unless(isset($commands[$commandKey]), 404);
 
-        return $this->runCommand($commands[$commandKey]['command'], $commands[$commandKey]['options'] ?? []);
+        $cmd = $commands[$commandKey];
+
+        return $this->run($cmd['command'], $cmd['options'] ?? []);
     }
 }

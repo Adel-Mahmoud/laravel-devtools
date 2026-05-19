@@ -9,13 +9,11 @@ class AuthorizeDevTools
 {
     public function handle(Request $request, Closure $next)
     {
-        $config = config('devtools');
-
-        if (!$config['enabled']) {
+        if (!config('devtools.enabled')) {
             abort(404);
         }
 
-        if (!in_array(app()->environment(), $config['allowed_environments'])) {
+        if (!in_array(app()->environment(), config('devtools.allowed_environments', []))) {
             abort(403);
         }
 

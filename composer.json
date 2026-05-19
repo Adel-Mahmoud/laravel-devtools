@@ -1,8 +1,6 @@
 {
     "name": "adel-mahmoud/devtools",
-    "description": "Laravel developer shortcuts package",
     "type": "library",
-    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Adel\\DevTools\\": "src/"

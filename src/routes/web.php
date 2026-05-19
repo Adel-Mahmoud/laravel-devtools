@@ -9,7 +9,8 @@ Route::middleware(array_merge(config('devtools.middleware'), [AuthorizeDevTools:
     ->group(function () {
 
         foreach (config('devtools.commands') as $key => $cmd) {
-            Route::post($cmd['route'], [CommandController::class, 'handleCommand'])
+            Route::post($cmd['route'], [CommandController::class, 'handle'])
                 ->defaults('commandKey', $key);
         }
+
     });
