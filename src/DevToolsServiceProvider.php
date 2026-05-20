@@ -2,29 +2,29 @@
 
 namespace Adel\DevTools;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\ServiceProvider;
 use Adel\DevTools\Commands\InstallDevToolsCommand;
 
 class DevToolsServiceProvider extends ServiceProvider
 {
-    public function register()
+    public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/devtools.php', 'devtools');
+        $this->mergeConfigFrom(__DIR__ . '/../config/devtools.php', 'devtools');
     }
 
-    public function boot()
+    public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__.'/routes/web.php');
+        $this->loadRoutesFrom(__DIR__ . '/routes/web.php');
 
-        $this->loadViewsFrom(__DIR__.'/resources/views', 'devtools');
+        $this->loadViewsFrom(__DIR__ . '/resources/views', 'devtools');
 
         $this->publishes([
-            __DIR__.'/../config/devtools.php' => config_path('devtools.php'),
+            __DIR__ . '/../config/devtools.php' => config_path('devtools.php'),
         ], 'devtools-config');
 
         $this->publishes([
-            __DIR__.'/resources/views' => resource_path('views/vendor/devtools'),
+            __DIR__ . '/resources/views' => resource_path('views/vendor/devtools'),
         ], 'devtools-views');
 
         if ($this->app->runningInConsole()) {

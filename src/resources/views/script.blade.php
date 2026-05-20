@@ -1,37 +1,106 @@
 @if(config('devtools.enabled'))
 <script>
 (function () {
+
     const csrf = '{{ csrf_token() }}';
-    const commands = @json(config('devtools.commands'));
+    const commands = @js(config('devtools.commands'));
+    const prefix = '{{ url(config('devtools.prefix')) }}';
 
-    function toast(msg, err=false){
-        const d=document.createElement('div');
-        d.innerText=msg;
-        d.style.cssText='position:fixed;bottom:20px;right:20px;padding:10px;background:'+(err?'#dc2626':'#16a34a')+';color:#fff;z-index:99999';
-        document.body.appendChild(d);
-        setTimeout(()=>d.remove(),2000);
+    function toast(message, error = false) {
+
+        const oldToast = document.getElementById('devtools-toast');
+
+        if (oldToast) {
+            oldToast.remove();
+        }
+
+        const toast = document.createElement('div');
+
+        toast.id = 'devtools-toast';
+
+        toast.innerHTML = `
+            <div style="
+                min-width:260px;
+                max-width:420px;
+                padding:14px 18px;
+                border-radius:12px;
+                background:${error ? '#dc2626' : '#16a34a'};
+                color:#fff;
+                position:fixed;
+                bottom:20px;
+                right:20px;
+                z-index:999999;
+                font-family:Arial,sans-serif;
+                box-shadow:0 10px 25px rgba(0,0,0,.2);
+                font-size:14px;
+            ">
+                ${message}
+            </div>
+        `;
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
     }
 
-    function run(route){
-        fetch('/devtools'+route,{
-            method:'POST',
-            headers:{
-                'X-CSRF-TOKEN':csrf,
-                'Accept':'application/json'
+    async function run(route) {
+
+        try {
+
+            const response = await fetch(prefix + '/' + route, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrf,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            toast(data.message, !data.success);
+
+        } catch (error) {
+
+            console.error(error);
+
+            toast(error.message || 'Unknown error', true);
+        }
+    }
+
+    document.addEventListener('keydown', async (event) => {
+
+        if (!event.altKey) {
+            return;
+        }
+
+        const key = event.code.replace('Key', '').toLowerCase();
+
+        if (!commands[key]) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const command = commands[key];
+
+        if (command.confirm) {
+
+            const confirmed = confirm(
+                'Are you sure you want to run: ' + command.command + ' ?'
+            );
+
+            if (!confirmed) {
+                return;
             }
-        })
-        .then(r=>r.json())
-        .then(d=>toast(d.message,!d.success))
-        .catch(e=>toast(e.message,true));
-    }
+        }
 
-    document.addEventListener('keydown',e=>{
-        if(!e.altKey)return;
-        const k=e.key.toLowerCase();
-        if(!commands[k])return;
-        e.preventDefault();
-        run(commands[k].route);
+        await run(command.route);
+
     });
+
 })();
 </script>
 @endif
