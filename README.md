@@ -1,3 +1,4 @@
+
 # Laravel DevTools
 
 A lightweight and secure developer toolkit for Laravel applications that allows you to execute predefined Artisan commands directly from the browser using keyboard shortcuts.
@@ -272,15 +273,13 @@ Example:
 
 ```text
 src/
-├── Commands/
-├── Controllers/
-├── Middleware/
-├── Providers/
-├── Services/
-├── Support/
-├── routes/
-├── resources/
-│   └── views/
+├───Commands
+├───Http
+│   ├───Controllers
+│   └───Middleware
+├───resources
+│   └───views
+└───routes
 └── config/
 ```
 
