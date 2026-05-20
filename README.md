@@ -394,4 +394,3 @@ MIT License - feel free to use and modify as needed.
 ## Contributing
 
 Issues and pull requests are welcome! If you find discrepancies between documentation and code, please open an issue.
-```
