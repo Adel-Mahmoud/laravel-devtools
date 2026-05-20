@@ -39,7 +39,7 @@ Instead of switching to the terminal repeatedly, Laravel DevTools allows you to 
 
 # Installation
 
-## Install via Composer
+## Install via Composer 
 
 ```bash
 composer require adel-mahmoud/devtools --dev
